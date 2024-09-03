@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Application</title>
+    <!-- External CSS  -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .quiz-container {
+            background-color: lightgrey;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .quiz-header {
+            margin-bottom: 20px;
+        }
+
+        .question {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .answers {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .answers li {
+            margin: 10px 0;
+        }
+
+        .answers input {
+            margin-right: 10px;
+        }
+
+        .submit-btn {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+
+        .results {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .timer {
+            font-size: 16px;
+            color: #dc3545;
+            margin-bottom: 10px;
+            border: 1px solid black;
+        }
+
+        .response {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .correct {
+            color: #28a745;
+        }
+
+        .incorrect {
+            color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <div id="timer" class="timer">Time Left: 30s</div>
+            <div id="question" class="question">Question text</div>
+        </div>
+        <ul id="answers" class="answers">
+            <!-- Answer options will be injected here -->
+        </ul>
+        <button id="submit" class="submit-btn">Submit Answer</button>
+        <div id="response" class="response"></div>
+        <div id="results" class="results"></div>
+    </div>
+
+    <!-- JavaScript  -->
+    <script>
+        const quizData = [
+            {
+                question: "What is the capital of France?",
+                a: "Berlin",
+                b: "Madrid",
+                c: "Paris",
+                d: "Lisbon",
+                correct: "c"
+            },
+            {
+                question: "Who is the CEO of Tesla?",
+                a: "Jeff Bezos",
+                b: "Elon Musk",
+                c: "Bill Gates",
+                d: "Warren Buffet",
+                correct: "b"
+            },
+            {
+                question: "What is the capital of Japan?",
+                a: "Seoul",
+                b: "Tokyo",
+                c: "Beijing",
+                d: "Bangkok",
+                correct: "b"
+            }
+        ];
+
+        const timerElement = document.getElementById('timer');
+        const questionElement = document.getElementById('question');
+        const answersElement = document.getElementById('answers');
+        const submitButton = document.getElementById('submit');
+        const responseElement = document.getElementById('response');
+        const resultsElement = document.getElementById('results');
+
+        let currentQuiz = 0;
+        let score = 0;
+        let timeLeft = 10;
+        let timerInterval;
+
+      
+        function loadQuiz() {
+            clearInterval(timerInterval);
+            responseElement.textContent = ''; // Clear previous response
+            const currentQuizData = quizData[currentQuiz];
+            questionElement.textContent = currentQuizData.question;
+            answersElement.innerHTML = `
+                <li>
+                    <input type="radio" id="a" name="answer" value="a">
+                    <label for="a">${currentQuizData.a}</label>
+                </li>
+                <li>
+                    <input type="radio" id="b" name="answer" value="b">
+                    <label for="b">${currentQuizData.b}</label>
+                </li>
+                <li>
+                    <input type="radio" id="c" name="answer" value="c">
+                    <label for="c">${currentQuizData.c}</label>
+                </li>
+                <li>
+                    <input type="radio" id="d" name="answer" value="d">
+                    <label for="d">${currentQuizData.d}</label>
+                </li>
+            `;
+            startTimer();
+        }
+
+        // Start the timer countdown
+        function startTimer() {
+            timeLeft = 10;
+            timerElement.textContent = `Time Left: ${timeLeft}s`;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `Time Left: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitAnswer();
+                }
+            }, 1000);
+        }
+
+      
+        function submitAnswer() {
+            clearInterval(timerInterval);
+            const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+            if (selectedAnswer) {
+                if (selectedAnswer.value === quizData[currentQuiz].correct) {
+                    responseElement.textContent = "Correct!";
+                    responseElement.className = "response correct";
+                    score++;
+                } else {
+                    responseElement.textContent = "Incorrect!";
+                    responseElement.className = "response incorrect";
+                }
+            } else {
+                responseElement.textContent = "You didn't select an answer!";
+                responseElement.className = "response incorrect";
+            }
+
+            currentQuiz++;
+            if (currentQuiz < quizData.length) {
+                setTimeout(loadQuiz, 2000); // Load next question after 2 seconds
+            } else {
+                showResults();
+            }
+        }
+        function showResults() {
+            resultsElement.textContent = `You scored ${score} out of ${quizData.length}`;
+            submitButton.style.display = 'none';
+            responseElement.style.display = 'none';
+            timerElement.style.display = 'none';
+            questionElement.style.display = 'none';
+            answersElement.style.display = 'none';
+        }
+
+        // Event listener for the submit button
+        submitButton.addEventListener('click', submitAnswer);
+        loadQuiz();
+    </script>
+</body>
+
+</html>
